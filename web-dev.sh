@@ -2,7 +2,7 @@
 
 WORK_DIR=$PWD
 if [ "$OSTYPE" = "msys" ]; then
-    WWORK_DIRD=$( echo "$PWD" | sed 's/^\///' | sed 's/\//\\/g' | sed 's/^./\0:/' )
+    WORK_DIR=$( echo "$PWD" | sed 's/^\///' | sed 's/\//\\/g' | sed 's/^./\0:/' )
 fi
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -32,7 +32,7 @@ elif [ "$1" = "docker-build" ]; then
     docker build -t web-dev dockerfile/.
 
 elif [ "$1" = "docker-start" ]; then
-    echo "docker-starting at $WD"
+    echo "docker-starting at $WORK_DIR"
 
     docker run --rm -d -p 5432:5432 \
         -v $WORK_DIR/.data/web-dev:/var/lib/postgresql/data \
