@@ -70,7 +70,26 @@ elif [ "$1" = "psql" ]; then
 elif [ "$1" = "pg_dump" ]; then
     docker exec web-dev pg_dump ${@:2}
 
+elif [ "$1" = "pg_restore" ]; then
+    docker exec web-dev pg_restore ${@:2}
+
+elif [ "$1" = "createdb" ]; then
+    docker exec web-dev createdb ${@:2}
+
+elif [ "$1" = "dropdb" ]; then
+    docker exec web-dev dropdb ${@:2}
+
 elif [ "$1" = "migra" ]; then
+#
+# https://databaseci.com/docs/migra/quickstart
+#
+# pg_dump --no-owner --no-privileges --schema-only -d postgresql://production -f schema.dump.sql
+# createdb existing
+# psql -d postgresql:///existing -f schema.dump.sql
+# migra --unsafe --schema <schema_name> postgresql:///existing postgresql:///database_with_new_schema > migration_<schema_name>_script.sql
+# dropdb existing
+# psql -d postgresql://production -1 -f migration_script.sql
+#
     docker exec web-dev migra ${@:2}
 
 elif [ "$1" = "bash" ]; then
