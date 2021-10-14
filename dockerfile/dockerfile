@@ -1,0 +1,29 @@
+# docker file for local-development
+#
+FROM postgres:14
+
+# packages and extensions
+#
+RUN apt-get update \
+    && apt-get install -y \
+        postgresql-14-pgtap \
+        postgresql-14-cron \
+        postgresql-14-partman \
+        postgresql-plpython3-14 \
+        libpq-dev \
+        python3-pip \
+        jq
+
+# build python modules
+#
+COPY requirements.txt /requirements.txt
+RUN pip3 install -r /requirements.txt
+
+# some files
+#
+COPY ./create-multiple-postgresql-databases.sh /docker-entrypoint-initdb.d/
+COPY test.sql /test.sql
+
+# work directory
+#
+WORKDIR /work

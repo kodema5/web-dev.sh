@@ -1,0 +1,4 @@
+# for database migration
+# https://github.com/djrobstep/migra
+
+migra[pg]
