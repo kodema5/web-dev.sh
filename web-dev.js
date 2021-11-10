@@ -37,11 +37,19 @@ async function query(sql, arg) {
 
 // https://deno.land/x/oak@v2.4.0
 import { Application, Router, Status } from "https://deno.land/x/oak/mod.ts"
+import { join, fromFileUrl, dirname } from "https://deno.land/std@0.110.0/path/mod.ts"
 
 ;(async () => {
 
     const router = new Router();
     router
+        .get("/web.js", async ({response}) => {
+            let p = dirname(fromFileUrl(import.meta.url))
+            let a = await Deno.readTextFile(join(p, 'web.js'))
+            response.body = a
+            response.headers.set('content-type', 'text/javascript')
+            response.headers.set('content-length', a.length)
+        })
         .get("/api/:schema/:func", async (ctx) => {
             let { schema, func } = ctx.params
             let req = ctx.request
