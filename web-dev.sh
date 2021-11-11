@@ -22,6 +22,8 @@ if [ $# = 0 ]; then
     echo " pg_dump * "
     echo " migra * "
     echo " bash * "
+    echo " run_git db-url git-url [tag] "
+    echo "                  runs to db-url from git-url with optional tag"
 
     echo ""
     echo "os: $OSTYPE"
@@ -95,5 +97,24 @@ elif [ "$1" = "migra" ]; then
 elif [ "$1" = "bash" ]; then
     docker exec -it web-dev bash ${@:2}
 
+elif [ "$1" = "run_git" ]; then
+# runs from git
+# ex: web-dev run_git postgresql://web@localhost/test https://github.com/kodema5/iot.sql v0.0.4
+#
+    if docker exec web-dev psql -U web -d $2 -lqt ; then
+        TMPDIR=$(mktemp -d -p .data)
+        if [ -z "$4" ] ; then
+            git -c advice.detachedHead=false clone --depth 1 \
+                --recurse-submodules --shallow-submodules \
+                $3 $TMPDIR
+        else
+            git -c advice.detachedHead=false clone --depth 1 \
+                --recurse-submodules --shallow-submodules \
+                --single-branch --branch $4 \
+                $3 $TMPDIR
+        fi
+        docker exec web-dev psql -U web -d $2 -f $TMPDIR/index.sql
+        rm -rf $TMPDIR
+    fi
 fi
 
