@@ -11,19 +11,19 @@ if [ $# = 0 ]; then
 
     echo "web-dev.sh [arg.*]"
     echo ""
-    echo " docker-build     builds web-dev docker image"
-    echo " docker-start     starts web-dev docker container"
-    echo " docker-stop      stops web-dev docker container"
+    echo " docker-build         builds web-dev docker image"
+    echo " docker-start         starts web-dev docker container"
+    echo " docker-stop          stops web-dev docker container"
 
-    echo " run [file.sql]   runs file.sql"
-    echo " watch [file.sql] watches file.sql (requires https://nodemon.io)"
-    echo " serve            serves web-dev.js (requires https://deno.land)"
+    echo " run [db] file.sql    runs file.sql on db=web"
+    echo " watch [db] file.sql  watches file.sql (requires https://nodemon.io)"
+    echo " serve                serves web-dev.js (requires https://deno.land)"
     echo " psql * "
     echo " pg_dump * "
     echo " migra * "
     echo " bash * "
     echo " run_git db-url git-url [tag] "
-    echo "                  runs to db-url from git-url with optional tag"
+    echo "                      runs to db-url from git-url with optional tag"
 
     echo ""
     echo "os: $OSTYPE"
@@ -50,15 +50,25 @@ elif [ "$1" = "docker-stop" ]; then
     docker stop web-dev
 
 elif [ "$1" = "run" ]; then
+    db="web"
+    sql=${@: -1}
+    if [ "$#" -eq 3 ]; then
+        db=$2
+    fi
     docker exec web-dev psql \
         -P pager=off -t --quiet -v -v ON_ERROR_STOP=1 \
-        -U web -d web -f //test.sql -v test_file=//work//$2 \
+        -U web -d $db -f //test.sql -v test_file=//work//$sql \
         -v migration=f
 
 elif [ "$1" = "watch" ]; then
+    db="web"
+    sql=${@: -1}
+    if [ "$#" -eq 3 ]; then
+        db=$2
+    fi
     run="docker exec web-dev psql \
         -P pager=off -t --quiet -v -v ON_ERROR_STOP=1 \
-        -U web -d web -f //test.sql -v test_file=//work//$2 \
+        -U web -d $db -f //test.sql -v test_file=//work//$sql \
         -v migration=f
     "
     nodemon -e sql --delay 1 -x "$run"
