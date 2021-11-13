@@ -50,8 +50,9 @@ import { join, fromFileUrl, dirname } from "https://deno.land/std@0.110.0/path/m
             response.headers.set('content-type', 'text/javascript')
             response.headers.set('content-length', a.length)
         })
-        .get("/api/:schema/:func", async (ctx) => {
-            let { schema, func } = ctx.params
+        .get("/api/:schema/:funcs+", async (ctx) => {
+            let { schema, funcs } = ctx.params
+            let func = funcs.replaceAll('/', '_')
             let req = ctx.request
             let arg = {
                 origin: ctx.ip,
@@ -62,8 +63,9 @@ import { join, fromFileUrl, dirname } from "https://deno.land/std@0.110.0/path/m
 
             ctx.response.body = await query(`select ${schema}.web_${func} ($1::jsonb)`, arg)
         })
-        .post("/api/:schema/:func", async (ctx) => {
-            let { schema, func } = ctx.params
+        .post("/api/:schema/:funcs+", async (ctx) => {
+            let { schema, funcs } = ctx.params
+            let func = funcs.replaceAll('/', '_')
             let req = ctx.request
             let arg = {
                 origin: ctx.ip,
