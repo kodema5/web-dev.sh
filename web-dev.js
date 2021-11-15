@@ -41,6 +41,20 @@ import { join, fromFileUrl, dirname } from "https://deno.land/std@0.110.0/path/m
 
 ;(async () => {
 
+    let isMd5Regex = /^[a-f0-9]{32}$/ig
+    let isMd5 = (a) => a && a.length===32  && a.match(isMd5Regex)
+    let isNum = (a) => !isNaN(parseFloat(a)) && isFinite(a)
+    let isId = (a) => isMd5(a) || isNum(a)
+    let getFuncArg = (s) => {
+        let arr = s.split('/')
+        let n = arr.length
+        let f = n>1 && isId(arr[arr.length-1])
+        return {
+            func: (f ? arr.slice(0,-1) : arr).join('_'),
+            funcArg: f ? { id:arr.pop() } : {},
+        }
+    }
+
     const router = new Router();
     router
         .get("/web.js", async ({response}) => {
@@ -52,12 +66,12 @@ import { join, fromFileUrl, dirname } from "https://deno.land/std@0.110.0/path/m
         })
         .get("/api/:schema/:funcs+", async (ctx) => {
             let { schema, funcs } = ctx.params
-            let func = funcs.replaceAll('/', '_')
+            let { func, funcArg } = getFuncArg(funcs)
             let req = ctx.request
             let arg = {
                 origin: ctx.ip,
                 authorization: req.headers.get('authorization'),
-                namespace: req.headers.get('namespace'),
+                ...(funcArg),
                 ...(Object.fromEntries(new URLSearchParams(req.url.search))),
             }
 
@@ -65,12 +79,12 @@ import { join, fromFileUrl, dirname } from "https://deno.land/std@0.110.0/path/m
         })
         .post("/api/:schema/:funcs+", async (ctx) => {
             let { schema, funcs } = ctx.params
-            let func = funcs.replaceAll('/', '_')
+            let { func, funcArg } = getFuncArg(funcs)
             let req = ctx.request
             let arg = {
                 origin: ctx.ip,
                 authorization: req.headers.get('authorization'),
-                namespace: req.headers.get('namespace'),
+                ...(funcArg),
                 ...(Object.fromEntries(new URLSearchParams(req.url.search))),
                 ...(req.hasBody && await req.body().value),
             }
