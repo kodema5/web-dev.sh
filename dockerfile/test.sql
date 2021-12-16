@@ -15,6 +15,7 @@ create schema if not exists tests;
 
 create extension if not exists pgtap;
 
+\set local :local
 \set test true
 
 
@@ -45,9 +46,6 @@ select current_setting('search_path')  as old_search_path,
 
 \set ON_ERROR_STOP 0
 \i :test_file
--- \i :test_file.sql
--- \i :test_file/:test_filename.sql
--- \i :test_file/index.sql
 \set ON_ERROR_STOP 1
 
 
@@ -78,9 +76,5 @@ set client_min_messages to warning;
 ---------------------------------------------------------------------------
 -- clean-up tests schema
 
-\set migration :migration
-\if :migration
-\else
 drop schema if exists tests cascade;
-\endif
 

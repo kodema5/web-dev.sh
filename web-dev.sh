@@ -15,8 +15,8 @@ if [ $# = 0 ]; then
     echo " docker-start         starts web-dev docker container"
     echo " docker-stop          stops web-dev docker container"
 
-    echo " run [db] file.sql    runs file.sql on db=web"
-    echo " watch [db] file.sql  watches file.sql (requires https://nodemon.io)"
+    echo " test file.sql [arg]  test file.sql w arg=[-v local=f]"
+    echo " watch file.sql [arg] watches file.sql w arg=[-v local=t] (requires https://nodemon.io)"
     echo " serve                serves web-dev.js (requires https://deno.land)"
     echo " psql * "
     echo " pg_dump * "
@@ -49,27 +49,27 @@ elif [ "$1" = "docker-stop" ]; then
     echo "docker-stop"
     docker stop web-dev
 
-elif [ "$1" = "run" ]; then
-    db="web"
-    sql=${@: -1}
-    if [ "$#" -eq 3 ]; then
-        db=$2
+elif [ "$1" = "test" ]; then
+    sql=$2
+    arg="-v local=f"
+    if [ "$#" -gt 2 ]; then
+        arg=${@:3}
     fi
     docker exec web-dev psql \
         -P pager=off -t --quiet -v -v ON_ERROR_STOP=1 \
-        -U web -d $db -f //test.sql -v test_file=//work//$sql \
-        -v migration=f
+        -U web -d web -f //test.sql -v test_file=//work//$sql \
+        $arg
 
 elif [ "$1" = "watch" ]; then
-    db="web"
-    sql=${@: -1}
-    if [ "$#" -eq 3 ]; then
-        db=$2
+    sql=$2
+    arg="-v local=t"
+    if [ "$#" -gt 2 ]; then
+        arg=${@:3}
     fi
     run="docker exec web-dev psql \
         -P pager=off -t --quiet -v -v ON_ERROR_STOP=1 \
-        -U web -d $db -f //test.sql -v test_file=//work//$sql \
-        -v migration=f
+        -U web -d web -f //test.sql -v test_file=//work//$sql \
+        $arg
     "
     nodemon -e sql --delay 1 -x "$run"
 
