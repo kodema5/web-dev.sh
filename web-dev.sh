@@ -20,7 +20,6 @@ if [ $# = 0 ]; then
     echo " serve                serves web-dev.js (requires https://deno.land)"
     echo " psql * "
     echo " pg_dump * "
-    echo " migra * "
     echo " bash * "
     echo " run_git db-url git-url [tag] "
     echo "                      runs to db-url from git-url with optional tag"
@@ -90,19 +89,6 @@ elif [ "$1" = "createdb" ]; then
 
 elif [ "$1" = "dropdb" ]; then
     docker exec web-dev dropdb ${@:2}
-
-elif [ "$1" = "migra" ]; then
-#
-# https://databaseci.com/docs/migra/quickstart
-#
-# pg_dump --no-owner --no-privileges --schema-only -d postgresql://production -f schema.dump.sql
-# createdb existing
-# psql -d postgresql:///existing -f schema.dump.sql
-# migra --unsafe --schema <schema_name> postgresql:///existing postgresql:///database_with_new_schema > migration_<schema_name>_script.sql
-# dropdb existing
-# psql -d postgresql://production -1 -f migration_script.sql
-#
-    docker exec web-dev migra ${@:2}
 
 elif [ "$1" = "bash" ]; then
     docker exec -it web-dev bash ${@:2}
