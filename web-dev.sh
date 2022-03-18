@@ -16,7 +16,7 @@ if [ $# = 0 ]; then
     echo " docker-stop          stops web-dev docker container"
 
     echo " test file.sql [arg]  test file.sql w arg=[-v local=f]"
-    echo " watch file.sql [arg] watches file.sql w arg=[-v local=t] (requires https://nodemon.io)"
+    echo " watch file.sql [test_pattern|*] watches file.sql (requires https://nodemon.io)"
     echo " serve                serves web-dev.js (requires https://deno.land)"
     echo " psql * "
     echo " pg_dump * "
@@ -51,7 +51,10 @@ elif [ "$1" = "docker-stop" ]; then
 elif [ "$1" = "test" ]; then
     sql=$2
     arg="-v local=f"
-    if [ "$#" -gt 2 ]; then
+    if [ "$#" -eq 3 ]; then
+        arg="-v local=f -v test_pattern=$3"
+    fi
+    if [ "$#" -gt 3 ]; then
         arg=${@:3}
     fi
     docker exec web-dev psql \
@@ -62,7 +65,10 @@ elif [ "$1" = "test" ]; then
 elif [ "$1" = "watch" ]; then
     sql=$2
     arg="-v local=t"
-    if [ "$#" -gt 2 ]; then
+    if [ "$#" -eq 3 ]; then
+        arg="-v local=t -v test_pattern=$3"
+    fi
+    if [ "$#" -gt 3 ]; then
         arg=${@:3}
     fi
     run="docker exec web-dev psql \
