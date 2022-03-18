@@ -9,6 +9,7 @@ RUN apt-get update \
         postgresql-14-pgtap \
         postgresql-14-cron \
         postgresql-14-partman \
+        postgresql-14-postgis-3 \
         postgresql-plpython3-14 \
         libpq-dev \
         python3-pip \
