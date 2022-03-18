@@ -1,4 +1,8 @@
 #!/bin/bash
+PG_USR="${PGUSER:-web}"
+PG_PWD="${PGPASSWORD:-rei}"
+PG_DB="${PGDATABASE:-web}"
+
 
 WORK_DIR=$PWD
 if [ "$OSTYPE" = "msys" ]; then
@@ -15,7 +19,7 @@ if [ $# = 0 ]; then
     echo " docker-start         starts web-dev docker container"
     echo " docker-stop          stops web-dev docker container"
 
-    echo " test file.sql [arg]  test file.sql w arg=[-v local=f]"
+    echo " test file.sql [arg]  test file.sql w arg=[-v local=t]"
     echo " watch file.sql [test_pattern|*] watches file.sql (requires https://nodemon.io)"
     echo " serve                serves web-dev.js (requires https://deno.land)"
     echo " psql * "
@@ -39,7 +43,7 @@ elif [ "$1" = "docker-start" ]; then
         -v $WORK_DIR/.data/web-dev:/var/lib/postgresql/data \
         -v $WORK_DIR:/work \
         --name web-dev \
-        -e POSTGRES_USER=web -e POSTGRES_PASSWORD=rei -e POSTGRES_DB=web \
+        -e POSTGRES_USER=$PG_USR -e POSTGRES_PASSWORD=$PG_PWD -e POSTGRES_DB=$PG_DB \
         web-dev \
         -c shared_preload_libraries=pg_cron \
         -c cron.database_name=web
@@ -50,16 +54,16 @@ elif [ "$1" = "docker-stop" ]; then
 
 elif [ "$1" = "test" ]; then
     sql=$2
-    arg="-v local=f"
+    arg="-v local=t"
     if [ "$#" -eq 3 ]; then
-        arg="-v local=f -v test_pattern=$3"
+        arg="-v local=t -v test_pattern=$3"
     fi
     if [ "$#" -gt 3 ]; then
         arg=${@:3}
     fi
     docker exec web-dev psql \
         -P pager=off -t --quiet -v -v ON_ERROR_STOP=1 \
-        -U web -d web -f //test.sql -v test_file=//work//$sql \
+        -U $PG_USR -d $PG_DB -f //test.sql -v test_file=//work//$sql \
         $arg
 
 elif [ "$1" = "watch" ]; then
@@ -73,7 +77,7 @@ elif [ "$1" = "watch" ]; then
     fi
     run="docker exec web-dev psql \
         -P pager=off -t --quiet -v -v ON_ERROR_STOP=1 \
-        -U web -d web -f //test.sql -v test_file=//work//$sql \
+        -U $PG_USR -d $PG_DB -f //test.sql -v test_file=//work//$sql \
         $arg
     "
     nodemon -e sql --delay 1 -x "$run"
