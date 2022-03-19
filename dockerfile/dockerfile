@@ -13,6 +13,7 @@ RUN apt-get update \
         postgresql-plpython3-14 \
         libpq-dev \
         python3-pip \
+        gdal-bin \
         git \
         jq
 
